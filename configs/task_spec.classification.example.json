@@ -1,0 +1,19 @@
+{
+  "task_type": "classification",
+  "dataset": "cc1",
+  "primary_metric": "auc",
+  "output_preferences": [
+    "probabilities",
+    "optional_calibration",
+    "optional_student_route"
+  ],
+  "constraints": {
+    "feature_iterations": 10,
+    "model_iterations": 5,
+    "parameter_iterations": 5,
+    "stage_timeout_s": 300,
+    "feedback_enabled": true,
+    "optimization_enabled": true
+  },
+  "profile": "legacy_equivalent"
+}

@@ -1,0 +1,6 @@
+-r requirements.txt
+tabpfn>=2.0.0,<3.0.0
+transformers>=4.30.0
+anthropic>=0.18.0
+google-generativeai
+
