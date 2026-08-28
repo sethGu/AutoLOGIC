@@ -8,6 +8,7 @@ project_root = os.path.abspath(
 sys.path.append(project_root)
 
 
+from agent import AgenticReasoningAgent
 from mystage1 import Stage1Classifier  # Automated Feature Engineering for tabular datasets
 from mystage1.run_llm_code import run_llm_code
 from sklearn.model_selection import train_test_split
@@ -455,8 +456,15 @@ if __name__ == '__main__':
         dataset=ds_name,
         out_dir=os.path.join(project_root, "result", "logs"),
     )
-    write_task_protocol(os.path.splitext(logger.path)[0] + ".protocol.json", task_spec, plan_bundle)
-    log_task_protocol(logger, task_spec, plan_bundle)
+    agent = AgenticReasoningAgent(task_spec, plan_bundle)
+    logger.bind_agent(agent)
+    write_task_protocol(
+        os.path.splitext(logger.path)[0] + ".protocol.json",
+        task_spec,
+        plan_bundle,
+        agent=agent,
+    )
+    log_task_protocol(logger, task_spec, plan_bundle, agent=agent)
     # New: List to store results for each experiment
     mae_list, rmse_list, rmsle_list = [], [], []
 

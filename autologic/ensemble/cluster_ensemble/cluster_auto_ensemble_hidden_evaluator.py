@@ -41,6 +41,7 @@ DEFAULT_LARGE_DATASETS = {"cd2", "ld2", "cc3"}
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from agent import AgenticReasoningAgent  # noqa: E402
 from utils.task_protocol import (  # noqa: E402
     build_feature_provenance,
     materialize_task_protocol,
@@ -1826,7 +1827,8 @@ def run_one(args) -> Dict[str, Any]:
     np.random.seed(args.seed)
     output_dir = Path(args.output_dir).resolve() / f"{args.dataset}_seed{args.seed}"
     output_dir.mkdir(parents=True, exist_ok=True)
-    write_task_protocol(output_dir / "task_protocol.json", task_spec, plan_bundle)
+    agent = AgenticReasoningAgent(task_spec, plan_bundle)
+    write_task_protocol(output_dir / "task_protocol.json", task_spec, plan_bundle, agent=agent)
 
     X, y, target_name, n_clusters, description = load_dataset(args.dataset)
     args.large_dataset_active = is_large_dataset_mode(args, args.dataset, len(X))
@@ -1845,6 +1847,7 @@ def run_one(args) -> Dict[str, Any]:
             "effective_selection_repeats": effective_selection_repeats(args),
             "task_spec": task_spec.to_dict(),
             "plans": plan_bundle.to_dict(),
+            "agent": agent.describe(),
         },
     )
     (X_train, X_val, X_test), feature_info = select_features(
@@ -1861,6 +1864,14 @@ def run_one(args) -> Dict[str, Any]:
         target_name,
         output_dir,
     )
+    agent.observe(
+        {
+            "stage": "feature_engineering",
+            "round": 1,
+            "status": "completed",
+            "events": {},
+        }
+    )
     teachers = generate_teacher_candidates(
         args,
         X_train,
@@ -1875,7 +1886,24 @@ def run_one(args) -> Dict[str, Any]:
         target_name,
         output_dir,
     )
+    agent.observe(
+        {
+            "stage": "model_generation",
+            "round": 1,
+            "status": "completed",
+            "val_ari": max((candidate.val_ari for candidate in teachers), default=None),
+            "events": {},
+        }
+    )
     rows = evaluate_configs(teachers, X_train, X_val, X_test, y_val, y_test, args, n_clusters)
+    agent.observe(
+        {
+            "stage": "output_control",
+            "round": 1,
+            "status": "completed",
+            "events": {},
+        }
+    )
     for row in rows:
         row.update(feature_info)
     payload = {
@@ -1888,6 +1916,8 @@ def run_one(args) -> Dict[str, Any]:
         "effective_selection_repeats": effective_selection_repeats(args),
         "task_spec": task_spec.to_dict(),
         "plans": plan_bundle.to_dict(),
+        "agent": agent.describe(),
+        "agent_transitions": agent.transitions(),
         "configs": rows,
         "teacher_candidates": [
             {

@@ -73,6 +73,10 @@ class QuantLogger:
         self.path = os.path.join(task_dir, f"{dataset}_{run_id}.jsonl")
         self._fh = open(self.path, "a", encoding="utf-8")
         self._round: Optional[_RoundState] = None
+        self._agent: Any = None
+
+    def bind_agent(self, agent: Any) -> None:
+        self._agent = agent
 
     def close(self) -> None:
         if self._round is not None:
@@ -125,6 +129,11 @@ class QuantLogger:
             "retry_count": int(events.get("retry", self._round.record.get("retry_count", 0)) or 0),
             "fallback_count": int(events.get("fallback", 0) or 0),
         }
+        if self._agent is not None:
+            try:
+                self._round.record["agent_transition"] = self._agent.observe(self._round.record)
+            except Exception as exc:
+                self._round.record["agent_transition_error"] = type(exc).__name__
         self._fh.write(_json_dumps(self._round.record) + "\n")
         self._fh.flush()
         self._round = None
@@ -140,6 +149,11 @@ class QuantLogger:
             "round": int(r),
         }
         rec.update(fields)
+        if self._agent is not None and stage != "task_protocol":
+            try:
+                rec["agent_transition"] = self._agent.observe(rec)
+            except Exception as exc:
+                rec["agent_transition_error"] = type(exc).__name__
         self._fh.write(_json_dumps(rec) + "\n")
         self._fh.flush()
 

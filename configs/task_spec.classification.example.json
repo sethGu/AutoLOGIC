@@ -15,5 +15,5 @@
     "feedback_enabled": true,
     "optimization_enabled": true
   },
-  "profile": "legacy_equivalent"
+  "profile": "paper_default"
 }

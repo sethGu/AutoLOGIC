@@ -36,6 +36,7 @@ from sklearn.metrics import (
     recall_score,
 )
 
+from agent import AgenticReasoningAgent
 from mystage1 import Stage1Classifier
 from mystage1.run_llm_code import run_llm_code
 
@@ -772,8 +773,15 @@ if __name__ == "__main__":
         dataset=ds_name,
         out_dir=os.path.join(project_root, "result", "logs"),
     )
-    write_task_protocol(os.path.splitext(logger.path)[0] + ".protocol.json", task_spec, plan_bundle)
-    log_task_protocol(logger, task_spec, plan_bundle)
+    agent = AgenticReasoningAgent(task_spec, plan_bundle)
+    logger.bind_agent(agent)
+    write_task_protocol(
+        os.path.splitext(logger.path)[0] + ".protocol.json",
+        task_spec,
+        plan_bundle,
+        agent=agent,
+    )
+    log_task_protocol(logger, task_spec, plan_bundle, agent=agent)
 
     config1_acc, config1_f1, config1_auc, config1_pre, config1_rec = [], [], [], [], []
     config2_acc, config2_f1, config2_auc, config2_pre, config2_rec = [], [], [], [], []

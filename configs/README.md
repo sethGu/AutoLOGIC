@@ -1,12 +1,12 @@
-# Task-specification files
+# Task specification
 
-Current task runners accept `--task-spec <path.json>`. The JSON object may contain:
+Task runners accept `--task-spec <path.json>` with the following fields:
 
-- `task_type`: `classification`, `multiclassification`, `regression`, or `clustering`;
-- `dataset`: must match the runner's dataset argument;
-- `primary_metric`: must match the implemented task metric (`auc`, `rmse`, or `ari`);
-- `output_preferences`: a subset of the outputs supported by that runner;
-- `constraints`: supported runner arguments such as bounded feature, model, and parameter iterations;
-- `profile`: defaults to `legacy_equivalent`.
+- `task_type`: `classification`, `multiclassification`, `regression`, or `clustering`.
+- `dataset`: dataset identifier used by the selected runner.
+- `primary_metric`: `auc`, `rmse`, or `ari` according to the task.
+- `output_preferences`: requested task outputs.
+- `constraints`: feature, model, parameter, timeout, feedback, and optimization settings.
+- `profile`: execution profile; the default is `paper_default`.
 
-Unsupported fields fail before data loading or model execution. Omitting `--task-spec` constructs the same schema from the active command-line arguments without changing their values.
+See `task_spec.classification.example.json` for a complete example.

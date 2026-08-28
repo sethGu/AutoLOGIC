@@ -9,6 +9,7 @@ project_root = os.path.abspath(
 sys.path.append(project_root)
 
 # Internal project imports
+from agent import AgenticReasoningAgent
 from mystage1 import Stage1Classifier  # Automated Feature Engineering for tabular datasets
 from mystage1 import data
 from mystage1.run_llm_code import run_llm_code
@@ -656,8 +657,15 @@ if __name__ == '__main__':
         dataset=ds_name,
         out_dir=os.path.join(project_root, "result", "logs"),
     )
-    write_task_protocol(os.path.splitext(logger.path)[0] + ".protocol.json", task_spec, plan_bundle)
-    log_task_protocol(logger, task_spec, plan_bundle)
+    agent = AgenticReasoningAgent(task_spec, plan_bundle)
+    logger.bind_agent(agent)
+    write_task_protocol(
+        os.path.splitext(logger.path)[0] + ".protocol.json",
+        task_spec,
+        plan_bundle,
+        agent=agent,
+    )
+    log_task_protocol(logger, task_spec, plan_bundle, agent=agent)
     # Print hyperparameter optimization switch status
     print(f"Hyperparameter Optimization Status: {'Enabled' if args.enable_optimization else 'Disabled'}")
     # Print model generation feedback switch status

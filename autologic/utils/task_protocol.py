@@ -77,7 +77,7 @@ class TaskSpec:
     primary_metric: str
     output_preferences: tuple[str, ...]
     constraints: dict[str, Any]
-    profile: str = "legacy_equivalent"
+    profile: str = "paper_default"
     schema_version: str = SCHEMA_VERSION
 
     def to_dict(self) -> dict[str, Any]:
@@ -91,7 +91,7 @@ class PlanBundle:
     optimization_plan: dict[str, Any]
     output_control_plan: dict[str, Any]
     revision_policy: dict[str, Any]
-    compatibility: dict[str, Any]
+    agent_execution: dict[str, Any]
     schema_version: str = SCHEMA_VERSION
 
     def to_dict(self) -> dict[str, Any]:
@@ -164,12 +164,12 @@ def build_plan_bundle(spec: TaskSpec, args: Any) -> PlanBundle:
         },
         "fallback": "best_runnable_or_task_runner_default",
     }
-    compatibility = {
+    agent_execution = {
         "profile": spec.profile,
-        "default_computation_path_changed": False,
-        "selection_policy_changed": False,
-        "test_evaluation_policy_changed": False,
-        "prefit_student_oof_refit": False,
+        "agent": "AgenticReasoningAgent",
+        "proposal_backend": "task_runner_llm",
+        "executor": "task_specific_modeling_executor",
+        "loop": ["propose", "execute", "observe", "revise"],
     }
     return PlanBundle(
         feature_plan=feature_plan,
@@ -177,7 +177,7 @@ def build_plan_bundle(spec: TaskSpec, args: Any) -> PlanBundle:
         optimization_plan=optimization_plan,
         output_control_plan=output_control_plan,
         revision_policy=revision_policy,
-        compatibility=compatibility,
+        agent_execution=agent_execution,
     )
 
 
@@ -190,7 +190,7 @@ def materialize_task_protocol(
     task = _normalise_task_type(task_type)
     primary_metric = _PRIMARY_METRICS[task]
     output_preferences = _OUTPUT_PREFERENCES[task]
-    profile = "legacy_equivalent"
+    profile = "paper_default"
     explicit_constraints: Mapping[str, Any] = {}
 
     if task_spec_path:
@@ -205,9 +205,12 @@ def materialize_task_protocol(
         requested_metric = str(payload.get("primary_metric", primary_metric)).lower()
         if requested_metric != primary_metric:
             raise ValueError(
-                f"This compatibility runner implements primary metric {primary_metric!r}, not {requested_metric!r}."
+                f"Runner metric is {primary_metric!r}; received {requested_metric!r}."
             )
-        requested_outputs = tuple(payload.get("output_preferences", output_preferences))
+        output_value = payload.get("output_preferences", output_preferences)
+        if not isinstance(output_value, (list, tuple)):
+            raise ValueError("Task-spec output_preferences must be an array.")
+        requested_outputs = tuple(output_value)
         unsupported_outputs = sorted(set(requested_outputs) - set(output_preferences))
         if unsupported_outputs:
             raise ValueError("Unsupported output preferences: " + ", ".join(unsupported_outputs))
@@ -230,20 +233,32 @@ def materialize_task_protocol(
     return spec, build_plan_bundle(spec, args)
 
 
-def write_task_protocol(path: str | Path, spec: TaskSpec, plans: PlanBundle) -> Path:
+def write_task_protocol(
+    path: str | Path,
+    spec: TaskSpec,
+    plans: PlanBundle,
+    agent: Any = None,
+) -> Path:
     output = Path(path)
     output.parent.mkdir(parents=True, exist_ok=True)
     payload = {"task_spec": spec.to_dict(), "plans": plans.to_dict()}
+    if agent is not None:
+        payload["agent"] = agent.describe()
+        payload["proposal"] = agent.propose()
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return output
 
 
-def log_task_protocol(logger: Any, spec: TaskSpec, plans: PlanBundle) -> None:
+def log_task_protocol(logger: Any, spec: TaskSpec, plans: PlanBundle, agent: Any = None) -> None:
+    agent_record = agent.describe() if agent is not None else None
+    proposal = agent.propose() if agent is not None else None
     logger.log(
         stage="task_protocol",
         r=0,
         task_spec=spec.to_dict(),
         plans=plans.to_dict(),
+        agent=agent_record,
+        proposal=proposal,
     )
 
 
