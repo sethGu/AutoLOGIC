@@ -72,10 +72,15 @@ def _fresh_model(base, seed=42):
     - Else if `base` is callable, call it with `seed` if supported, otherwise without args.
     - Else deepcopy the provided estimator and set random_state if available.
     """
-    import torch.nn as nn
+    # PyTorch is only needed for neural student models; sklearn-only routes
+    # also support the minimal CPU demonstration environment.
+    try:
+        import torch.nn as nn
+    except ImportError:
+        nn = None
     
     # Handle PyTorch models (e.g., StudentNet)
-    if isinstance(base, nn.Module):
+    if nn is not None and isinstance(base, nn.Module):
         m = deepcopy(base)
         return m
     

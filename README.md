@@ -26,20 +26,31 @@ AutoLOGIC is an agentic framework for automated tabular learning across classifi
 
 ## Installation
 
+For a tested offline CPU example with included synthetic data:
+
 ```bash
 python -m venv .venv
-python -m pip install -r requirements.txt
 ```
 
-Configure data paths and the LLM endpoint through environment variables:
+Activate the environment (`.\.venv\Scripts\Activate.ps1` in PowerShell or
+`source .venv/bin/activate` on Linux/macOS), then run:
+
+```bash
+python -m pip install -r requirements-demo.txt
+python demo/run_demo.py
+```
+
+See [installation and use](docs/INSTALLATION.md) for requirements, tested
+versions and full-run setup, and [the demo guide](demo/README.md) for expected
+outputs and timing. Full LLM workflows require `requirements.txt` and an endpoint
+configured through these environment variables:
 
 ```text
 OPENAI_API_KEY
 OPENAI_BASE_URL
-AUTOLOGIC_DATA_DIR
-AUTOLOGIC_CSV_DATA_DIR
-AUTOLOGIC_REGRESSION_DATA_DIR
 ```
+
+Input paths differ between task runners; see [dataset layout](data/README.md).
 
 ## Task runners
 
@@ -70,3 +81,10 @@ Fig. 5 and Fig. 6 scripts are organized by panel under `reproduce/fig5/` and `re
 python scripts/check_release.py
 python scripts/build_manifest.py
 ```
+
+## License
+
+AutoLOGIC is distributed under [Apache-2.0](LICENSE). The included synthetic
+demo data use the same license. Upstream CAAFE attribution is retained in
+[NOTICE](NOTICE) and [third-party notices](THIRD_PARTY_NOTICES.md). External
+benchmark data and separately installed dependencies retain their own licenses.

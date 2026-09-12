@@ -1,0 +1,57 @@
+{
+  "mode": "offline_synthetic_demo",
+  "remote_llm_called": false,
+  "data_sha256": "b9af2e0d389d6bd343eab93dd06125926e6078bda331dac7f8f8c12f9c5d4219",
+  "seed": 42,
+  "split_rows": {
+    "fit": 144,
+    "validation": 48,
+    "test": 48
+  },
+  "feature_validation_auc": {
+    "raw": 0.9669565217391305,
+    "interaction": 1.0
+  },
+  "selected_feature_route": "interaction",
+  "model_validation_auc": {
+    "logistic_C0.1": 1.0,
+    "logistic_C1": 1.0,
+    "random_forest": 0.9408695652173913
+  },
+  "selected_models": [
+    "logistic_C0.1",
+    "logistic_C1"
+  ],
+  "stacking_metrics": {
+    "roc_auc": 0.9982608695652173,
+    "pr_auc": 0.9981884057971014,
+    "accuracy": 0.9375,
+    "balanced_accuracy": 0.9347826086956521,
+    "f1": 0.9302325581395349,
+    "precision": 1.0,
+    "recall": 0.8695652173913043,
+    "brier": 0.044007783735689976,
+    "ece": 0.09887445128426878
+  },
+  "calibration_fit_source": "oof_meta_train_cv",
+  "settings": {
+    "stacking_folds": 3,
+    "meta_cv_repeats": 1,
+    "meta_C_grid": [
+      0.1,
+      1
+    ],
+    "calibration": "sigmoid",
+    "calibration_folds": 3,
+    "threshold": 0.5
+  },
+  "versions": {
+    "numpy": "1.26.4",
+    "pandas": "2.2.3",
+    "scipy": "1.15.2",
+    "scikit-learn": "1.6.1"
+  },
+  "python": "3.12.14",
+  "system": "Windows",
+  "elapsed_seconds": 0.241
+}

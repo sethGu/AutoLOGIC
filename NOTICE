@@ -1,0 +1,12 @@
+AutoLOGIC
+Copyright 2026 AutoLOGIC contributors.
+
+This product includes software developed for CAAFE:
+Copyright by Noah Hollmann, Samuel Müller and Frank Hutter 2023.
+https://github.com/automl/CAAFE
+Licensed under the Apache License, Version 2.0.
+
+AutoLOGIC contains modified and extended CAAFE-derived feature-engineering
+modules in autologic/mystage1/ and legacy_sage/mycaafe/. The AutoLOGIC versions
+contain changes to task handling, generation, execution checks and logging.
+See THIRD_PARTY_NOTICES.md and LICENSES/CAAFE-LICENSE.txt.
